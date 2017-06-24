@@ -1,18 +1,16 @@
 package com.bundle.converter;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import org.springframework.http.MediaType;
+import com.property.to.json.converter.BundleToJsonConverter;
+import com.property.to.json.converter.Node;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
-import propertiestojson.util.PropertiesToJsonParser;
 
-import java.io.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 
@@ -28,55 +26,33 @@ public class BundleConverterController {
     public JsonNode getData() {
 
 
-        String jsonStr = "";
+        ClassLoader classLoader = BundleToJsonConverter.class.getClassLoader();
 
-        ClassLoader classLoader = getClass().getClassLoader();
-        Properties properties = new Properties();
+        try (InputStream file = classLoader.getResourceAsStream("properties/property.properties")) {
 
-        try (InputStream file = classLoader.getResourceAsStream("properties/property.properties")){
 
+            Properties properties = new Properties();
             properties.load(file);
-
-            Properties filteredProperty = new Properties();
+            Properties filteredProperties = new Properties();
 
             for (String key : properties.stringPropertyNames()) {
-
                 if (key.startsWith("common.awards") || key.startsWith("common.expertise")) {
-                    String value =  properties.getProperty(key);
-                    filteredProperty.put(key,value);
+                    String value = properties.getProperty(key);
+                    filteredProperties.put(key, value);
                 }
-
             }
 
-            jsonStr = PropertiesToJsonParser.parseToJson(filteredProperty);
 
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode rootNode = mapper.readTree(jsonStr);
+            Node rootNode = BundleToJsonConverter.build(filteredProperties);
 
-            /*JsonNode commonNode = rootNode.get("common");
-            JsonNode awardsNode = commonNode.get("awards");
-
-
-            JsonNode expertiseNode = commonNode.get("expertise");
-            ObjectNode awardsAndExpertiesNode = mapper.getNodeFactory().objectNode();
-
-            awardsAndExpertiesNode.set("awards", awardsNode);
-            awardsAndExpertiesNode.set("expertise", expertiseNode);
-            */
-
-            return rootNode;
-
+            return rootNode.toJsonNode();
 
         } catch (IOException ex) {
-
-            logger.log(Level.SEVERE, ex.getMessage());
-
-        } finally {
-
-        }
-
+            ex.printStackTrace();
+        };
 
         return null;
+
 
     }
 
