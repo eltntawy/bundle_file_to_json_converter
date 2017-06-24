@@ -11,8 +11,6 @@ import java.io.FileInputStream;
 /**
  * Created by mohamedrefaat on 6/22/17.
  */
-@WebService
-@SOAPBinding(style = SOAPBinding.Style.RPC)
 public class TestJacksonMapper {
 
     public static void main(String args[]) {
