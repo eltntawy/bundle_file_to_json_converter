@@ -1,5 +1,6 @@
 package com.bundle.converter;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.property.to.json.converter.BundleToJsonConverter;
 import com.property.to.json.converter.Node;
 import org.junit.Assert;
@@ -21,7 +22,7 @@ public class TestNewParserAlgorithm {
 
         ClassLoader classLoader = BundleToJsonConverter.class.getClassLoader();
 
-        try (InputStream file = classLoader.getResourceAsStream("properties/test.properties")) {
+        try (InputStream file = classLoader.getResourceAsStream("properties/property.properties")) {
 
 
             Properties properties = new Properties();
@@ -39,7 +40,18 @@ public class TestNewParserAlgorithm {
             Node rootNode = BundleToJsonConverter.build(filteredProperties);
 
             Assert.assertNotNull(rootNode);
-            Assert.assertNotNull(rootNode.toJsonNode());
+
+            JsonNode rootJsonNode = rootNode.toJsonNode();
+
+            Assert.assertNotNull(rootJsonNode);
+
+            System.out.println("before replace steps: " +rootJsonNode);
+
+            rootJsonNode = rootNode.toJsonNodeWithoutSteps();
+
+            Assert.assertNotNull(rootJsonNode);
+
+            System.out.println("after replace steps: " +rootJsonNode);
 
         } catch (IOException ex) {
             ex.printStackTrace();

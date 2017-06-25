@@ -3,6 +3,7 @@ package com.property.to.json.converter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
@@ -10,16 +11,17 @@ import java.util.Set;
  * Created by mohamedrefaat on 6/24/17.
  */
 public class BundleToJsonConverter {
-    protected static final Logger log = LoggerFactory.getLogger(BundleToJsonConverter.class.getSimpleName());
 
+    protected static final Logger log = LoggerFactory.getLogger(BundleToJsonConverter.class.getSimpleName());
 
     private static Node root = new Node("root", "root");
 
-    public static  Node build(Properties properties) {
+    public static Node build(Properties properties) {
 
         Set<String> propertiesNames = properties.stringPropertyNames();
 
         for (String key : propertiesNames) {
+
 
             log.debug("key: " + key);
             String value = properties.getProperty(key);
@@ -56,7 +58,13 @@ public class BundleToJsonConverter {
             insertNode(childOfChild, key.substring(nodeName.length() + 1), value);
 
         } else {
-            Node newNode = new Node(nodeName, value);
+            Node newNode;
+            if (key.substring(nodeName.length()).length() == 0) {
+                newNode = new Node(nodeName, value);
+            } else {
+                newNode = new Node(nodeName, null);
+            }
+
             newNode.setParent(child);
             child.getChildList().add(newNode);
 
@@ -86,6 +94,5 @@ public class BundleToJsonConverter {
         return fillChildNode(node, key.substring(nodeName.length() + 1), value);
 
     }
-
 
 }

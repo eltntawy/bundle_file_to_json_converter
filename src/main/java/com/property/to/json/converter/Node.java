@@ -5,14 +5,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Created by mohamedrefaat on 6/24/17.
  */
-public class Node {
+public class Node implements Comparable<Node> {
 
     private String name;
     private String value;
@@ -81,7 +79,7 @@ public class Node {
 
     public boolean hasChildArray() {
 
-        boolean isArray = false ;
+        boolean isArray = false;
         for (Node node : childList) {
             String childNodeName = node.getName();
             if (childNodeName != null && childNodeName.matches("\\d+")) {
@@ -111,7 +109,7 @@ public class Node {
 
         ObjectNode rootJsonNode = new ObjectMapper().createObjectNode();
 
-        if(hasChilds()) {
+        if (hasChilds()) {
             ObjectNode childJsonNode = getChildAsJsonNode(childList);
             rootJsonNode.set(name, childJsonNode);
         } else {
@@ -125,26 +123,26 @@ public class Node {
 
         ObjectNode objectNode = new ObjectMapper().createObjectNode();
 
-        for(Node node : childList) {
+        for (Node node : childList) {
 
-            if(node.hasChilds()) {
-                if(node.hasChildArray()) {
+            if (node.hasChilds()) {
+                if (node.hasChildArray()) {
                     ArrayNode childArrayNode = getChildAsArrayNode(node.getChildList());
                     objectNode.set(node.getName(), childArrayNode);
                 } else {
                     ObjectNode childJsonNode = getChildAsJsonNode(node.getChildList());
-                    if(childJsonNode == null) {
+                    if (childJsonNode == null) {
                         objectNode.put(node.getName(), node.getValue());
                     } else {
                         objectNode.set(node.getName(), childJsonNode);
                     }
                 }
             } else {
-                objectNode.put(node.getName(),node.getValue());
+                objectNode.put(node.getName(), node.getValue());
             }
 
         }
-        if(childList.size() == 0) {
+        if (childList.size() == 0) {
             return null;
         }
 
@@ -153,17 +151,19 @@ public class Node {
     }
 
 
-    private ArrayNode getChildAsArrayNode (List<Node> childListNode) {
+    private ArrayNode getChildAsArrayNode(List<Node> childListNode) {
 
         ArrayNode arrayNode = new ObjectMapper().createArrayNode();
 
-        for(Node childNode : childListNode) {
+        Collections.sort(childListNode);
+
+        for (Node childNode : childListNode) {
 
             JsonNode jsonNode = getChildAsJsonNode(childNode.getChildList());
-            if(jsonNode == null) {
+            if (jsonNode == null) {
 
                 arrayNode.add(childNode.getValue());
-            }else {
+            } else {
                 arrayNode.add(jsonNode);
             }
 
@@ -172,6 +172,68 @@ public class Node {
         return arrayNode;
 
     }
+
+
+    public JsonNode toJsonNodeWithoutSteps() {
+
+        JsonNode jsonNode = toJsonNode();
+
+        if (jsonNode instanceof ObjectNode) {
+
+            Iterator<String> nameIterator = jsonNode.fieldNames();
+            while (nameIterator.hasNext()) {
+
+                String nodeName = nameIterator.next();
+
+                removeStepsFromChildsNode(nodeName, jsonNode.get(nodeName));
+
+            }
+
+
+        }
+
+        return jsonNode;
+    }
+
+    private void removeStepsFromChildsNode(String nodeName, JsonNode node) {
+
+        if (node != null) {
+            if ("stage".equals(nodeName)) {
+
+                if (node.isArray()) {
+                    ArrayNode stageNode = (ArrayNode) node;
+
+                    if (stageNode.findValue("step").isArray()) {
+
+                        ArrayNode newStageNode = new ObjectMapper().createArrayNode();
+
+                        for (JsonNode step : stageNode) {
+                            ArrayNode stepArray = (ArrayNode) step.get("step");
+                            newStageNode.add(stepArray);
+                        }
+
+                        stageNode.removeAll();
+                        stageNode.addAll(newStageNode);
+                    }
+
+                }
+
+            } else {
+
+                Iterator<String> nameIterator = node.fieldNames();
+                while (nameIterator.hasNext()) {
+
+                    String childNodeName = nameIterator.next();
+
+                    removeStepsFromChildsNode(childNodeName, node.get(childNodeName));
+
+                }
+
+            }
+        }
+
+    }
+
 
     @Override
     public boolean equals(Object o) {
@@ -195,5 +257,23 @@ public class Node {
     }
 
 
+    @Override
+    public int compareTo(Node node) {
 
+
+        if (node.getName() != null && this.getName() != null) {
+
+            if (node.getName().matches("\\d+") && this.getName().matches("\\d+")) {
+
+                Integer nodeOrder = Integer.parseInt(node.getName());
+                Integer currentNodeOrder = Integer.parseInt(this.getName());
+
+                return currentNodeOrder.compareTo(nodeOrder);
+
+            }
+
+        }
+
+        return 0;
+    }
 }

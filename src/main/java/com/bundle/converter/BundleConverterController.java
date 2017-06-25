@@ -45,7 +45,7 @@ public class BundleConverterController {
 
             Node rootNode = BundleToJsonConverter.build(filteredProperties);
 
-            return rootNode.toJsonNode();
+            return rootNode.toJsonNodeWithoutSteps();
 
         } catch (IOException ex) {
             ex.printStackTrace();
