@@ -14,9 +14,11 @@ public class BundleToJsonConverter {
 
     protected static final Logger log = LoggerFactory.getLogger(BundleToJsonConverter.class.getSimpleName());
 
-    private static Node root = new Node("root", "root");
 
     public static Node build(Properties properties) {
+
+        Node root = new Node("root", "root");
+
 
         Set<String> propertiesNames = properties.stringPropertyNames();
 
@@ -54,7 +56,7 @@ public class BundleToJsonConverter {
 
         if (child.hasDirect(nodeName)) {
             Node childOfChild = child.getChild(nodeName);
-
+            System.out.println(nodeName);
             insertNode(childOfChild, key.substring(nodeName.length() + 1), value);
 
         } else {
@@ -76,7 +78,7 @@ public class BundleToJsonConverter {
     }
 
 
-    public static Node fillChildNode(Node parent, String key, String value) {
+    private static Node fillChildNode(Node parent, String key, String value) {
 
         String nodeName = key.split("\\.")[0];
         Node node = new Node();

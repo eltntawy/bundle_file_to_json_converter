@@ -22,7 +22,7 @@ public class TestNewParserAlgorithm {
 
         ClassLoader classLoader = BundleToJsonConverter.class.getClassLoader();
 
-        try (InputStream file = classLoader.getResourceAsStream("properties/property.properties")) {
+        try (InputStream file = classLoader.getResourceAsStream("properties/test.properties")) {
 
 
             Properties properties = new Properties();
